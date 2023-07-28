@@ -2,6 +2,7 @@ package com.example.springdatabaseintegrationtest;
 
 import com.example.springdatabaseintegrationtest.models.CollegeStudent;
 import com.example.springdatabaseintegrationtest.models.GradebookCollegeStudent;
+import com.example.springdatabaseintegrationtest.reposiotry.StudentDao;
 import com.example.springdatabaseintegrationtest.service.StudentAndGradeService;
 import org.junit.jupiter.api.*;
 import org.mockito.Mock;
@@ -29,7 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 public class GradeBookControllerTest {
 
-    private static MockHttpServletRequest mockHttpServletRequest;
+    private static MockHttpServletRequest request;
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
@@ -39,17 +40,21 @@ public class GradeBookControllerTest {
     @Mock
     private StudentAndGradeService studentAndGradeService;
 
+    @Autowired
+    private StudentDao studentDao;
+
     @BeforeAll
-    static void beforeAll() {
-        mockHttpServletRequest = new MockHttpServletRequest();
-        mockHttpServletRequest.setParameter("firstname", "Hwan");
-        mockHttpServletRequest.setParameter("lastname", "Dev");
-        mockHttpServletRequest.setParameter("email_address", "DevHwan@gamil.com");
+    public static void setup() {
+        request = new MockHttpServletRequest();
+        request.setParameter("firstname", "Chad");
+        request.setParameter("lastname", "Darby");
+        request.setParameter("emailAddress", "chad.darby@luv2code_school.com");
     }
 
     @BeforeEach
-    private void beforeEach() {
-        jdbcTemplate.execute("insert into student(id, firstname, lastname, email_address) " + "values (1, 'Hwan', 'Dev', 'DevHwan@gamil.com')");
+    public void beforeEach() {
+        jdbcTemplate.execute("insert into student(id, firstname, lastname, email_address) " +
+                "values (10, 'Eric', 'Roby', 'eric.roby@luv2code_school.com')");
     }
 
     @AfterEach
@@ -78,13 +83,17 @@ public class GradeBookControllerTest {
     public void createStudentHttpRequest() throws Exception {
         MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.post("/")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .param("firstname", mockHttpServletRequest.getParameterValues("firstname"))
-                        .param("lastname", mockHttpServletRequest.getParameterValues("lastname"))
-                        .param("email_address", mockHttpServletRequest.getParameterValues("email_address")))
+                        .param("firstname", request.getParameterValues("firstname"))
+                        .param("lastname", request.getParameterValues("lastname"))
+                        .param("emailAddress", request.getParameterValues("emailAddress")))
                 .andExpect(status().isOk()).andReturn();
 
         ModelAndView mav = mvcResult.getModelAndView();
 
         ModelAndViewAssert.assertViewName(mav,"index");
+
+        CollegeStudent verifyStudent = studentDao.findByEmailAddress("chad.darby@luv2code_school.com");
+
+        Assertions.assertNotNull(verifyStudent, "database don't have this student");
     }
 }

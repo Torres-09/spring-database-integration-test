@@ -25,11 +25,13 @@ public class GradebookController {
         return "index";
     }
 
-	@RequestMapping(value = "/",method = RequestMethod.POST)
-	public String createStudent(@ModelAttribute("student") CollegeStudent collegeStudent, Model model) {
+    @RequestMapping(value = "/", method = RequestMethod.POST)
+    public String createStudent(@ModelAttribute("student") CollegeStudent collegeStudent, Model model) {
         studentAndGradeService.createStudent(collegeStudent.getFirstname(), collegeStudent.getLastname(), collegeStudent.getEmailAddress());
-		return "index";
-	}
+        Iterable<CollegeStudent> collegeStudents = studentAndGradeService.getGradeBook();
+        model.addAttribute("students", collegeStudents);
+        return "index";
+    }
 
 
     @GetMapping("/studentInformation/{id}")
@@ -37,4 +39,15 @@ public class GradebookController {
         return "studentInformation";
     }
 
+    @DeleteMapping("/{id}")
+    public String deleteStudent(@PathVariable int id, Model model) {
+        if (!studentAndGradeService.checkIfStudentIsNull(id)) {
+            return "error";
+        }
+
+        studentAndGradeService.deleteStudent(id);
+        Iterable<CollegeStudent> students = studentAndGradeService.getGradeBook();
+        model.addAttribute("students", students);
+        return "index";
+    }
 }

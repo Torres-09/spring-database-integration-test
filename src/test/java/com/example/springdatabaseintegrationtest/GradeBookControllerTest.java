@@ -22,7 +22,9 @@ import org.springframework.web.servlet.ModelAndView;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.ModelAndViewAssert.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @TestPropertySource("/application.properties")
@@ -38,7 +40,7 @@ public class GradeBookControllerTest {
     private MockMvc mockMvc;
 
     @Mock
-    private StudentAndGradeService studentAndGradeService;
+    private StudentAndGradeService studentAndGradeServiceMock;
 
     @Autowired
     private StudentDao studentDao;
@@ -69,18 +71,26 @@ public class GradeBookControllerTest {
 
         ArrayList<CollegeStudent> collegeStudentList = new ArrayList<>(Arrays.asList(studentOne, studentTwo));
 
-        when(studentAndGradeService.getGradeBook()).thenReturn(collegeStudentList);
+        when(studentAndGradeServiceMock.getGradeBook()).thenReturn(collegeStudentList);
 
-        Assertions.assertIterableEquals(collegeStudentList, studentAndGradeService.getGradeBook());
+        assertIterableEquals(collegeStudentList, studentAndGradeServiceMock.getGradeBook());
 
         MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.get("/")).andExpect(status().isOk()).andReturn();
         ModelAndView mav = mvcResult.getModelAndView();
 
-        ModelAndViewAssert.assertViewName(mav, "index");
+        assertViewName(mav, "index");
     }
 
     @Test
     public void createStudentHttpRequest() throws Exception {
+        CollegeStudent studentOne = new CollegeStudent("Eric", "Roby", "eric_roby@gmail.com");
+
+        ArrayList<CollegeStudent> collegeStudentList = new ArrayList<>(Arrays.asList(studentOne));
+
+        when(studentAndGradeServiceMock.getGradeBook()).thenReturn(collegeStudentList);
+
+        assertIterableEquals(collegeStudentList, studentAndGradeServiceMock.getGradeBook());
+
         MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.post("/")
                         .contentType(MediaType.APPLICATION_JSON)
                         .param("firstname", request.getParameterValues("firstname"))
@@ -90,10 +100,36 @@ public class GradeBookControllerTest {
 
         ModelAndView mav = mvcResult.getModelAndView();
 
-        ModelAndViewAssert.assertViewName(mav,"index");
+        assertViewName(mav,"index");
 
         CollegeStudent verifyStudent = studentDao.findByEmailAddress("chad.darby@luv2code_school.com");
 
-        Assertions.assertNotNull(verifyStudent, "database don't have this student");
+        assertNotNull(verifyStudent, "database don't have this student");
+    }
+
+    @Test
+    public void deleteStudentHttpRequest() throws Exception {
+        assertTrue(studentDao.findById(10).isPresent());
+
+        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders
+                        .delete("/{id}", 10))
+                .andExpect(status().isOk()).andReturn();
+
+        ModelAndView mav = mvcResult.getModelAndView();
+
+        assertViewName(mav, "index");
+
+        assertFalse(studentDao.findById(10).isPresent());
+    }
+
+    @Test
+    public void deleteStudentHttpRequestErrorPage() throws Exception {
+        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders
+                        .delete("/{id}", 0))
+                .andExpect(status().isOk()).andReturn();
+
+        ModelAndView mav = mvcResult.getModelAndView();
+
+        assertViewName(mav, "error");
     }
 }

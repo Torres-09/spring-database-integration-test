@@ -1,6 +1,12 @@
 package com.example.springdatabaseintegrationtest;
 
 import com.example.springdatabaseintegrationtest.models.CollegeStudent;
+import com.example.springdatabaseintegrationtest.models.HistoryGrade;
+import com.example.springdatabaseintegrationtest.models.MathGrade;
+import com.example.springdatabaseintegrationtest.models.ScienceGrade;
+import com.example.springdatabaseintegrationtest.reposiotry.HistoryGradeDao;
+import com.example.springdatabaseintegrationtest.reposiotry.MathGradeDao;
+import com.example.springdatabaseintegrationtest.reposiotry.ScienceGradeDao;
 import com.example.springdatabaseintegrationtest.reposiotry.StudentDao;
 import com.example.springdatabaseintegrationtest.service.StudentAndGradeService;
 import org.junit.jupiter.api.*;
@@ -28,10 +34,19 @@ class SpringDatabaseIntegrationTestApplicationTests {
    @Autowired
    private JdbcTemplate jdbcTemplate;
 
+   @Autowired
+   private MathGradeDao mathGradeDao;
+
+   @Autowired
+   private ScienceGradeDao scienceGradeDao;
+
+   @Autowired
+   private HistoryGradeDao historyGradeDao;
+
    @BeforeEach
    public void setupDataBase() {
       jdbcTemplate.execute("insert into student(id, firstname, lastname, email_address) " +
-              "values (1, 'Hwan', 'Dev', 'DevHwan@gamil.com')");
+              "values (1, 'Hwan', 'Dev', 'DevHwan@gmail.com')");
    }
 
    @AfterEach
@@ -42,7 +57,7 @@ class SpringDatabaseIntegrationTestApplicationTests {
    @Test
     public void createStudentService() {
        // set up
-       studentService.createStudent("Hwan","Dev","DevHwan@gmail.com");
+//       studentService.createStudent("Hwan","Dev","DevHwan@gmail.com");
 
        // execute
        CollegeStudent student = studentDao.findByEmailAddress("DevHwan@gmail.com");
@@ -82,5 +97,32 @@ class SpringDatabaseIntegrationTestApplicationTests {
       }
 
       assertEquals(5,collegeStudents.size());
+   }
+
+   @Test
+   public void createGradeService() {
+      // create the grade
+      assertTrue(studentService.createGrade(80.50, 1, "math"));
+      assertTrue(studentService.createGrade(80.50, 1, "science"));
+      assertTrue(studentService.createGrade(80.50, 1, "history"));
+
+      // get all grade with studentId
+      Iterable<MathGrade> mathGrades = mathGradeDao.findMathGradeByStudentId(1);
+      Iterable<ScienceGrade> scienceGrades = scienceGradeDao.findScienceGradeByStudentId(1);
+      Iterable<HistoryGrade> historyGrades = historyGradeDao.findHistoryGradeByStudentId(1);
+
+      // verify there is grade
+      assertTrue(mathGrades.iterator().hasNext(), "Student has math grades");
+      assertTrue(scienceGrades.iterator().hasNext(), "Student has science grade");
+      assertTrue(historyGrades.iterator().hasNext(), "Student has history grade");
+   }
+
+   @Test
+   @DisplayName(value = "invalid grade")
+   public void createGradeServiceReturnFalse() {
+      assertFalse(studentService.createGrade(105, 1, "math"));
+      assertFalse(studentService.createGrade(-5, 1, "math"));
+      assertFalse(studentService.createGrade(80, 2, "math"));
+      assertFalse(studentService.createGrade(80, 1, "literature"));
    }
 }

@@ -46,4 +46,13 @@ public class MathGrade implements Grade {
     public void setGrade(double grade) {
         this.grade = grade;
     }
+
+    @Override
+    public String toString() {
+        return "MathGrade{" +
+                "id=" + id +
+                ", studentId=" + studentId +
+                ", grade=" + grade +
+                '}';
+    }
 }

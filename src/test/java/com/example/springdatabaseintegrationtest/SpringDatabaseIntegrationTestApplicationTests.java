@@ -9,9 +9,9 @@ import com.example.springdatabaseintegrationtest.reposiotry.MathGradeDao;
 import com.example.springdatabaseintegrationtest.reposiotry.ScienceGradeDao;
 import com.example.springdatabaseintegrationtest.reposiotry.StudentDao;
 import com.example.springdatabaseintegrationtest.service.StudentAndGradeService;
-import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.TestPropertySource;
@@ -22,7 +22,7 @@ import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@TestPropertySource("/application.properties")
+@TestPropertySource("/application-test.properties")
 @SpringBootTest
 class SpringDatabaseIntegrationTestApplicationTests {
 
@@ -43,24 +43,44 @@ class SpringDatabaseIntegrationTestApplicationTests {
     @Autowired
     private HistoryGradeDao historyGradeDao;
 
-    @BeforeEach
-    @Transactional
-    public void setupDataBase() {
-        jdbcTemplate.execute("insert into student(id, firstname, lastname, email_address) " +
-                "values (1, 'Hwan', 'Dev', 'DevHwan@gmail.com')");
+    @Value("${sql.script.create.student}")
+    private String sqlAddStudent;
 
-        jdbcTemplate.execute("insert into math_grade(id, student_id, grade) values (1,1,100.00)");
-        jdbcTemplate.execute("insert into science_grade(id, student_id, grade) values (1,1,100.00)");
-        jdbcTemplate.execute("insert into history_grade(id, student_id, grade) values (1,1,100.00)");
-        List<Map<String, Object>> maps = jdbcTemplate.queryForList("select * from math_grade");
+    @Value("${sql.script.create.math.grade}")
+    private String sqlAddMathGrade;
+
+    @Value("${sql.script.create.science.grade}")
+    private String sqlAddScienceGrade;
+
+    @Value("${sql.script.create.history.grade}")
+    private String sqlAddHistoryGrade;
+
+    @Value("${sql.script.delete.student}")
+    private String sqlDeleteStudent;
+
+    @Value("${sql.script.delete.math.grade}")
+    private String sqlDeleteMathGrade;
+
+    @Value("${sql.script.delete.science.grade}")
+    private String sqlDeleteScienceGrade;
+
+    @Value("${sql.script.delete.history.grade}")
+    private String sqlDeleteHistoryGrade;
+
+    @BeforeEach
+    public void setupDataBase() {
+        jdbcTemplate.execute(sqlAddStudent);
+        jdbcTemplate.execute(sqlAddMathGrade);
+        jdbcTemplate.execute(sqlAddScienceGrade);
+        jdbcTemplate.execute(sqlAddHistoryGrade);
     }
 
     @AfterEach
     public void setupAfterTransaction() {
-        jdbcTemplate.execute("delete from student");
-        jdbcTemplate.execute("delete from math_grade");
-        jdbcTemplate.execute("delete from science_grade");
-        jdbcTemplate.execute("delete from history_grade");
+        jdbcTemplate.execute(sqlDeleteStudent);
+        jdbcTemplate.execute(sqlDeleteMathGrade);
+        jdbcTemplate.execute(sqlDeleteScienceGrade);
+        jdbcTemplate.execute(sqlDeleteHistoryGrade);
     }
 
     @Test

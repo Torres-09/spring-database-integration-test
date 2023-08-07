@@ -7,6 +7,7 @@ import com.example.springdatabaseintegrationtest.service.StudentAndGradeService;
 import org.junit.jupiter.api.*;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
@@ -45,6 +46,30 @@ public class GradeBookControllerTest {
     @Autowired
     private StudentDao studentDao;
 
+    @Value("${sql.script.create.student}")
+    private String sqlAddStudent;
+
+    @Value("${sql.script.create.math.grade}")
+    private String sqlAddMathGrade;
+
+    @Value("${sql.script.create.science.grade}")
+    private String sqlAddScienceGrade;
+
+    @Value("${sql.script.create.history.grade}")
+    private String sqlAddHistoryGrade;
+
+    @Value("${sql.script.delete.student}")
+    private String sqlDeleteStudent;
+
+    @Value("${sql.script.delete.math.grade}")
+    private String sqlDeleteMathGrade;
+
+    @Value("${sql.script.delete.science.grade}")
+    private String sqlDeleteScienceGrade;
+
+    @Value("${sql.script.delete.history.grade}")
+    private String sqlDeleteHistoryGrade;
+
     @BeforeAll
     public static void setup() {
         request = new MockHttpServletRequest();
@@ -55,13 +80,18 @@ public class GradeBookControllerTest {
 
     @BeforeEach
     public void beforeEach() {
-        jdbcTemplate.execute("insert into student(id, firstname, lastname, email_address) " +
-                "values (10, 'Eric', 'Roby', 'eric.roby@luv2code_school.com')");
+        jdbcTemplate.execute(sqlAddStudent);
+        jdbcTemplate.execute(sqlAddMathGrade);
+        jdbcTemplate.execute(sqlAddScienceGrade);
+        jdbcTemplate.execute(sqlAddHistoryGrade);
     }
 
     @AfterEach
     public void setupAfterTransaction() {
-        jdbcTemplate.execute("delete from student");
+        jdbcTemplate.execute(sqlDeleteStudent);
+        jdbcTemplate.execute(sqlDeleteMathGrade);
+        jdbcTemplate.execute(sqlDeleteScienceGrade);
+        jdbcTemplate.execute(sqlDeleteHistoryGrade);
     }
 
     @Test
@@ -100,7 +130,7 @@ public class GradeBookControllerTest {
 
         ModelAndView mav = mvcResult.getModelAndView();
 
-        assertViewName(mav,"index");
+        assertViewName(mav, "index");
 
         CollegeStudent verifyStudent = studentDao.findByEmailAddress("chad.darby@luv2code_school.com");
 

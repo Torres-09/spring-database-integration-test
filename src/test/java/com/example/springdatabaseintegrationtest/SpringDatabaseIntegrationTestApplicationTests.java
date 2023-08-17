@@ -22,7 +22,7 @@ import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-    @TestPropertySource("/application-test.properties")
+@TestPropertySource("/application-test.properties")
 @SpringBootTest
 class SpringDatabaseIntegrationTestApplicationTests {
 
